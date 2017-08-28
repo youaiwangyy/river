@@ -1,15 +1,64 @@
 package com.youai.river.test;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
+import com.youai.river.util.ApiLogger;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Qingjiang Li on 2017/8/2.
  */
 public class ListTest {
 
+
+
+    @Test
+    public void testListInsert() {
+        List<Integer> list = new ArrayList<>();
+        list.add(0);
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.add(4);
+        list.add(5);
+
+       List<String> llit = list.stream().map(id->String.valueOf(id)).collect(Collectors.toList());
+
+        System.out.println(llit);
+    }
+
+
+    @Test
+    public void testArray() {
+        long[] followTabIds = new long[]{};
+        String tabs = "1001,1002,1003,1004";
+
+        Iterable<String> split = Splitter.on(",").omitEmptyStrings().split(tabs);
+
+        Iterable<Long> iterable = Longs.stringConverter().convertAll(split);
+        ArrayList<Long> list = Lists.newArrayList(iterable);
+        followTabIds = Longs.toArray(list);
+        ApiLogger.info(JSONObject.toJSONString(followTabIds));
+    }
+
+
+    @Test
+    public void testRemove() {
+        List<Long> list = Lists.newArrayList(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L);
+        List<Long> removeUids = new ArrayList<>();
+        for (Long id : list) {
+            if (id % 2 == 0) {
+                removeUids.add(id);
+            }
+        }
+        list.removeAll(removeUids);
+        System.out.println(list);
+    }
 
     @Test
     public void testShuffle() {

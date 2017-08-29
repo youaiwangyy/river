@@ -19,7 +19,7 @@ import java.util.List;
  * Created by Qingjiang Li on 2017/7/20.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/commons/mvc-dispatcher-servlet.xml")
+@ContextConfiguration(locations = "classpath:commons/mvc-dispatcher-servlet.xml")
 public class UserDaoTest {
 
     @Resource

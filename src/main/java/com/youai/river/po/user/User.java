@@ -1,12 +1,19 @@
 package com.youai.river.po.user;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 
 /**
  * Created by Qingjiang Li on 2017/7/24.
  */
+@Document(
+        collection = "user",
+        language = "UTF-8"
+)
 public class User implements Serializable {
 
+    private static final long serialVersionUID = -441357960214445827L;
     private long id;
     private String username;
     private String password;

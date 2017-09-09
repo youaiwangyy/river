@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-2.5.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd">
-
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/data/mongo
+        http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+    ">
     <!-- properties 配置文件 -->
     <context:property-placeholder location="classpath:*.properties" />
 
@@ -28,5 +30,69 @@
     <bean id="jdbcTemplent" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource"></property>
     </bean>
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxActive" value="50" />
+        <property name="maxIdle" value="8" />
+        <property name="maxWait" value="1000" />
+        <property name="testOnBorrow" value="true"/>
+        <property name="testOnReturn" value="true"/>
+        <!-- <property name="testWhileIdle" value="true"/> -->
+    </bean>
+
+    <bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool"  scope="singleton">
+        <constructor-arg index="0" ref="jedisPoolConfig" />
+        <constructor-arg index="1">
+            <list>
+                <bean class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.host}" />
+                    <constructor-arg index="1" value="${redis.port}" />
+                    <constructor-arg index="2" value="${redis.timeout}" />
+                    <constructor-arg index="3" type="int" value="1" />
+                    <property name="password" value="${redis.pass}"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <mongo:mongo-client id="mongoClient"  host="${mongo.host}" port="${mongo.port}" credentials="${mongo.user}:${mongo.pwd}@${mongo.defaultDbName}">
+        <mongo:client-options
+                connections-per-host="${mongo.connectionsPerHost}"
+                min-connections-per-host="${mongo.minConnectionsPerHost}"
+                threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
+                connect-timeout="${mongo.connectTimeout}"
+                max-wait-time="${mongo.maxWaitTime}"
+                socket-keep-alive="${mongo.socketKeepAlive}"
+                socket-timeout="${mongo.socketTimeout}"
+                description="${mongo.description}"
+                max-connection-idle-time="${mongo.maxConnectionIdleTime}"
+                max-connection-life-time="${mongo.maxConnectionLifeTime}"
+                heartbeat-socket-timeout="${mongo.heartbeatSocketTimeout}"
+                heartbeat-connect-timeout="${mongo.heartbeatConnectTimeout}"
+                min-heartbeat-frequency="${mongo.minHeartbeatFrequency}"
+                heartbeat-frequency="${mongo.heartbeatFrequency}"
+
+        />
+    </mongo:mongo-client>
+
+    <bean id="mappingContext"
+          class="org.springframework.data.mongodb.core.mapping.MongoMappingContext" />
+    <bean id="defaultMongoTypeMapper"
+          class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+        <constructor-arg index="0" type="java.lang.String"><null/></constructor-arg>
+    </bean>
+
+    <mongo:mapping-converter id="mappingMongoConverter"
+                             db-factory-ref="mongoDbFactory"
+                             mapping-context-ref="mappingContext"
+                             type-mapper-ref="defaultMongoTypeMapper"/>
+
+    <mongo:db-factory id="mongoDbFactory"
+                      dbname="${mongo.defaultDbName}"
+                      mongo-ref="mongoClient"/>
+
+    <mongo:template id="mongoTemplate" converter-ref="mappingMongoConverter" db-factory-ref="mongoDbFactory" write-concern="NORMAL"/>
+
+
 
 </beans>

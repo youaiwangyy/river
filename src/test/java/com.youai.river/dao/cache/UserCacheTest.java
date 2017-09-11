@@ -1,15 +1,21 @@
 package com.youai.river.dao.cache;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.youai.river.cache.mongo.MongoUserDao;
 import com.youai.river.cache.redis.RedisUserCache;
 import com.youai.river.po.user.User;
+import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.data.mongodb.core.query.*;
+import org.springframework.data.mongodb.core.query.BasicUpdate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Created by Qingjiang Li on 2017/7/20.
@@ -31,10 +37,10 @@ public class UserCacheTest {
     }
 
     @Test
-    public void testMongo() {
+    public void testMongo() throws Exception {
         long current = System.currentTimeMillis();
         User user = new User();
-        user.setId(100002L);
+        user.setId(1200003L);
         user.setUsername("Qingjiang Li");
         user.setPassword("liqingjiang");
         user.setSex(1);
@@ -43,9 +49,15 @@ public class UserCacheTest {
         user.setUpdateTime(current);
         user.setCreateTime(current);
 
-        System.out.println("user:" + user);
-        User add = mongoUserDao.add(user);
-        System.out.println("add:" + add);
+        List<User> users = Lists.newArrayList();
+        for (int i=0; i<1000000; i++) {
+            User uc = (User)BeanUtils.cloneBean(user);
+            uc.setId(user.getId() + i);
+            users.add(uc);
+        }
+        long start = System.currentTimeMillis();
+        mongoUserDao.addBatch(users);
+        System.out.println("time: " + (System.currentTimeMillis() - start));
 
     }
 
@@ -56,6 +68,24 @@ public class UserCacheTest {
         BasicUpdate update = new BasicUpdate("{$unset:{_class:1}}");
         User user = mongoUserDao.findAndUpdate(query, update);
         System.out.println(user);
+
+    }
+
+    @Test
+    public void testFind(){
+        Criteria criteria = Criteria.where("id").gte(100001L);
+        Query query = Query.query(criteria);
+
+        List<User> userList = mongoUserDao.findByQuery(query, 10, 0);
+        System.out.println(JSONObject.toJSONString(userList));
+    }
+
+    @Test
+    public void testUpdate(){
+        Criteria criteria = Criteria.where("id").gte(100000);
+        Query query = Query.query(criteria);
+        BasicUpdate update = new BasicUpdate("{$push:{hobbies:{$each:['dog','cat','run', 'basketball']}}}");
+        mongoUserDao.updateAll(query, update);
 
     }
 

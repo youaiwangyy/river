@@ -17,17 +17,24 @@ public class CommonNumberUtil {
         if (str == null || str.length() == 0) {
             return false;
         }
-        Pattern pattern = Pattern.compile("^[-\\+]?[1-9][0-9]*$");
+        Pattern pattern = Pattern.compile("^(\\-|\\+)?\\d+$");
         return pattern.matcher(str).matches();
     }
 
+    /**
+     * 判断str 是否是 正数、负数或小数
+     * @param str str
+     * @return boolean
+     */
     public static boolean isDecimal(String str) {
         if (str == null || str.length() == 0) {
             return false;
         }
-        Pattern pattern = Pattern.compile("^[\\d][\\d]*$");
+        Pattern pattern = Pattern.compile("^(\\-|\\+)?\\d+(\\.\\d+)?$");
         return pattern.matcher(str).matches();
     }
+
+
 
 
 }

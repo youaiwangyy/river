@@ -1,5 +1,6 @@
 package com.youai.river.test;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -44,8 +45,9 @@ public class JsonTest {
     }
     @Test
     public void testJson() {
-        JSONObject result = new JSONObject();
-
+        String ids = "[123,123,234]";
+        JSONArray idArray = JSONObject.parseArray(ids);
+        System.out.println(idArray);
 
     }
 
